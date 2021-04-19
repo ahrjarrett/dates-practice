@@ -16,7 +16,7 @@ const subtract = (subtrahend: number) => (minuend: number) =>
   minuend - subtrahend;
 
 const getBeginningOfDay = (fa: IO<Date>): IO<Date> =>
-  pipe(fa, chain(dateFromDate), setHours(0, 0, 0, 0), chain(fromNumber));
+  pipe(fa, chain(cloneDate), setHours(0, 0, 0, 0), chain(fromNumber));
 
 const getYear = (date: Date): number => {
   return date.getFullYear();
@@ -31,7 +31,7 @@ const setYear = (fa: IO<Date>) => (n: number) =>
 const getYearsAgo = (years: number) => (fa: IO<Date>): IO<Date> =>
   pipe(
     fa,
-    chain(dateFromDate),
+    chain(cloneDate),
     map(getYear),
     map(subtract(years)),
     chain(setYear(fa)),
@@ -54,20 +54,20 @@ const setHours = (hh: number, mm: number, ss: number, ms: number) => (
   );
 
 const fromNumber = (n: number): IO<Date> => () => new Date(n);
-const dateFromDate = (d: Date): IO<Date> => () => new Date(d);
+const cloneDate = (d: Date): IO<Date> => () => new Date(d);
 
 const getTomorrow = (fa: IO<Date>): IO<Date> =>
   pipe(fa, chain(getDate), map(inc), chain(setDate(fa)), chain(fromNumber));
 
 const getMax = (max: number): IO<Date> =>
-  pipe(dateFromDate(now), getTomorrow, getBeginningOfDay, getYearsAgo(max));
+  pipe(cloneDate(now), getTomorrow, getBeginningOfDay, getYearsAgo(max));
 
 const getMin = (min: number): IO<Date> =>
-  pipe(dateFromDate(now), getBeginningOfDay, getYearsAgo(min));
+  pipe(cloneDate(now), getBeginningOfDay, getYearsAgo(min));
 
 const isWithinAgeRange = ({ min, max }: AgeRange): Predicate<Date> => (d) => {
   const doIO = pipe(
-    dateFromDate(d),
+    cloneDate(d),
     bindTo("d"),
     bind("min", () => getMin(min)),
     bind("max", () => getMax(max)),
