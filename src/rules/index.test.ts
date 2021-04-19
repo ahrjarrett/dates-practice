@@ -3,7 +3,7 @@ import {
   oldestAgeInYears,
   youngestAgeInYears,
   now,
-} from "./rule-2";
+} from ".";
 
 const YYYY = now.getFullYear();
 const MM = now.getMonth();

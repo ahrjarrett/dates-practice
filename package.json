@@ -1,14 +1,11 @@
 {
-  "name": "bestow-technical-interview",
+  "name": "dates-practice",
   "private": true,
   "version": "0.0.0",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "@types/chai": "^4.2.16",
     "@types/jest": "^26.0.22",
-    "@types/type-is": "^1.6.3",
-    "chai": "^4.3.4",
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.1.0",
     "jest": "^26.6.3",
@@ -22,16 +19,8 @@
     "clean": "rm -rf ./lib",
     "test": "jest",
     "test:w": "yarn test --watchAll",
-    "dev": "nodemon --exec yarn start",
-    "start": "ts-node src/index"
+    "dev": "yarn test:w",
+    "start": "yarn test"
   },
-  "dependencies": {
-    "fp-ts": "^2.10.2",
-    "fp-ts-contrib": "^0.1.21",
-    "io-ts": "^2.2.16",
-    "io-ts-types": "^0.5.16",
-    "monocle-ts": "^2.3.9",
-    "newtype-ts": "^0.3.4",
-    "type-is": "^1.6.18"
-  }
+  "dependencies": {}
 }
