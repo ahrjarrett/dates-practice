@@ -6,6 +6,9 @@ type AgeRange = {
   max: number;
 };
 
+type Hours = [number, number, number, number];
+
+// We're cheating here by now starting out with a lazy value, but this is just to control when the date is actually recorded.
 const now = new Date();
 export const getNowIO: IO<Date> = () => now;
 export const youngestAgeInYears = 18;
@@ -45,14 +48,13 @@ const setDate = (d: Date) => (n: number): IO<number> =>
     of(d),
     map((d) => d.setDate(n))
   );
-const setHours = (hh: number, mm: number, ss: number, ms: number) => (
-  d: Date
-): IO<number> =>
+const setHours = (...[hh, mm, ss, ms]: Hours) => (d: Date): IO<number> =>
   pipe(
     of(d),
     map((d) => d.setHours(hh, mm, ss, ms))
   );
 
+// Constructors:
 const fromNumber = (n: number): IO<Date> => () => new Date(n);
 const cloneDate = (d: Date): IO<Date> => () => new Date(d);
 
