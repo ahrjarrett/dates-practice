@@ -1,13 +1,19 @@
+import { IO, chain } from "fp-ts/IO";
+import { pipe } from "fp-ts/function";
 import {
   default as predicate,
   oldestAgeInYears,
   youngestAgeInYears,
-  now,
+  getNowIO,
 } from ".";
 
-const YYYY = now.getFullYear();
-const MM = now.getMonth();
-const DD = now.getDate();
+const getYear = (d: Date): IO<number> => () => d.getFullYear();
+const getMonth = (d: Date): IO<number> => () => d.getMonth();
+const getDate = (d: Date): IO<number> => () => d.getDate();
+
+const YYYY = pipe(getNowIO, chain(getYear))();
+const MM = pipe(getNowIO, chain(getMonth))();
+const DD = pipe(getNowIO, chain(getDate))();
 
 /**
  * These tests don't account for UTC offset!
