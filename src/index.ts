@@ -1,41 +1,83 @@
-type Predicate<A> = (a: A) => boolean;
+import { pipe, Predicate } from "fp-ts/function";
+import { IO, map, chain, bindTo, bind } from "fp-ts/IO";
+
+type AgeRange = {
+  min: number;
+  max: number;
+};
 
 export const youngestAgeInYears = 18;
 export const oldestAgeInYears = 55;
-export const getNow = () => new Date();
+export const getNow: IO<Date> = () => new Date();
 export const now = getNow();
 
-const getBeginningOfDay = (d: Date) => {
-  const date = new Date(d);
-  date.setHours(0, 0, 0, 0);
-  return date;
+const inc = (n: number) => n + 1;
+const subtract = (subtrahend: number) => (minuend: number) =>
+  minuend - subtrahend;
+
+const getBeginningOfDay = (fa: IO<Date>): IO<Date> =>
+  pipe(fa, chain(dateFromDate), setHours(0, 0, 0, 0), chain(fromNumber));
+
+const getYear = (date: Date): number => {
+  return date.getFullYear();
 };
 
-const getYearsAgo = (nYears: number, d: Date) => {
-  const date = new Date(d);
-  date.setFullYear(date.getFullYear() - nYears);
-  return date;
+const setYear = (fa: IO<Date>) => (n: number) =>
+  pipe(
+    fa,
+    map((d) => d.setFullYear(n))
+  );
+
+const getYearsAgo = (years: number) => (fa: IO<Date>): IO<Date> =>
+  pipe(
+    fa,
+    chain(dateFromDate),
+    map(getYear),
+    map(subtract(years)),
+    chain(setYear(fa)),
+    chain(fromNumber)
+  );
+
+const getDate = (d: Date): IO<number> => () => d.getDate();
+
+const setDate = (fa: IO<Date>) => (n: number): IO<number> =>
+  pipe(
+    fa,
+    map((d) => d.setDate(n))
+  );
+const setHours = (hh: number, mm: number, ss: number, ms: number) => (
+  fa: IO<Date>
+): IO<number> =>
+  pipe(
+    fa,
+    map((d) => d.setHours(hh, mm, ss, ms))
+  );
+
+const fromNumber = (n: number): IO<Date> => () => new Date(n);
+const dateFromDate = (d: Date): IO<Date> => () => new Date(d);
+
+const getTomorrow = (fa: IO<Date>): IO<Date> =>
+  pipe(fa, chain(getDate), map(inc), chain(setDate(fa)), chain(fromNumber));
+
+const getMax = (max: number): IO<Date> =>
+  pipe(dateFromDate(now), getTomorrow, getBeginningOfDay, getYearsAgo(max));
+
+const getMin = (min: number): IO<Date> =>
+  pipe(dateFromDate(now), getBeginningOfDay, getYearsAgo(min));
+
+const isWithinAgeRange = ({ min, max }: AgeRange): Predicate<Date> => (d) => {
+  const doIO = pipe(
+    dateFromDate(d),
+    bindTo("d"),
+    bind("min", () => getMin(min)),
+    bind("max", () => getMax(max)),
+    bind("return", ({ min, max, d }): IO<boolean> => () => d > min && d < max)
+  );
+
+  return doIO().return;
 };
 
-const getTomorrow = (d: Date): Date => {
-  const date = new Date(d);
-  date.setDate(date.getDate() + 1);
-  return date;
-};
-
-const isWithinAgeRange: (
-  minimum: number,
-  maximum: number
-) => Predicate<Date> = (minimum, maximum) => (d) => {
-  const candidate = new Date(d);
-  const today = getBeginningOfDay(now);
-  const tomorrow = getBeginningOfDay(getTomorrow(now));
-
-  // Here we actually reverse max and min, since the minimum age in milliseconds is actually the higher number, & vice-versa:
-  // TODO: Consider renaming these?
-  const max = getYearsAgo(minimum, tomorrow);
-  const min = getYearsAgo(maximum, today);
-  return candidate > min && candidate < max;
-};
-
-export default isWithinAgeRange(youngestAgeInYears, oldestAgeInYears);
+export default isWithinAgeRange({
+  max: youngestAgeInYears,
+  min: oldestAgeInYears,
+});

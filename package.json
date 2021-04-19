@@ -22,5 +22,10 @@
     "dev": "yarn test:w",
     "start": "yarn test"
   },
-  "dependencies": {}
+  "dependencies": {
+    "fp-ts": "^2.10.3",
+    "io-ts": "^2.2.16",
+    "monocle-ts": "^2.3.9",
+    "newtype-ts": "^0.3.4"
+  }
 }
